@@ -55,21 +55,25 @@ pipeline {
 
         stage('Verify Application') {
             steps {
-                sh '''
-                    for i in {1..12}; do
-                        if curl -fsS http://localhost:8082/api/v1/employees; then
-                            echo "Application is running successfully!"
-                            exit 0
-                        fi
+        sh '''
+            echo "Waiting for Employee Management application..."
 
-                        echo "Waiting for application..."
-                        sleep 5
-                    done
+            for i in {1..24}; do
+                if curl -fsS http://localhost:8082/api/v1/employees; then
+                    echo ""
+                    echo "Application is running successfully!"
+                    exit 0
+                fi
 
-                    echo "Application failed to start."
-                    docker logs employee-app
-                    exit 1
-                '''
+                echo "Waiting for application... attempt $i/24"
+                sleep 5
+            done
+
+            echo "Application failed to start."
+            docker ps -a
+            docker logs employee-app
+            exit 1
+        '''
             }
         }
     }
