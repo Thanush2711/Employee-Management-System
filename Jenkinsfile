@@ -37,15 +37,18 @@ pipeline {
         }
 
         stage('Run Application') {
-            steps {
-                sh '''
-                    docker run -d \
-                    --name employee-app \
-                    --network ems-network \
-                    -p 8082:8082 \
-                    -e SPRING_DATASOURCE_URL="jdbc:mysql://mysqldb:3306/EMS?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true" \
-                    employee-management-backend:latest
-                '''
+              steps {
+        withCredentials([string(credentialsId: 'mysql-root-password', variable: 'MYSQL_PASSWORD')]) {
+            sh '''
+                docker run -d \
+                --name employee-app \
+                --network ems-network \
+                -p 8082:8082 \
+                -e SPRING_DATASOURCE_URL="jdbc:mysql://mysqldb:3306/EMS?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true" \
+                -e SPRING_DATASOURCE_USERNAME="root" \
+                -e SPRING_DATASOURCE_PASSWORD="$MYSQL_PASSWORD" \
+                employee-management-backend:latest
+            '''
             }
         }
 
