@@ -58,14 +58,17 @@ pipeline {
         sh '''
             echo "Waiting for Employee Management application..."
 
-            for i in {1..24}; do
+            attempt=1
+
+            while [ $attempt -le 24 ]; do
                 if curl -fsS http://localhost:8082/api/v1/employees; then
                     echo ""
                     echo "Application is running successfully!"
                     exit 0
                 fi
 
-                echo "Waiting for application... attempt $i/24"
+                echo "Waiting for application... attempt $attempt/24"
+                attempt=$((attempt + 1))
                 sleep 5
             done
 
@@ -74,6 +77,7 @@ pipeline {
             docker logs employee-app
             exit 1
         '''
+    
             }
         }
     }
