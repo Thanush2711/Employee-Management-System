@@ -10,7 +10,7 @@ pipeline {
             }
         }
 
-        stage('Maven Build and Test') {
+        stage('Maven Build') {
             steps {
                 sh 'mvn clean install -DskipTests'
             }
@@ -37,18 +37,19 @@ pipeline {
         }
 
         stage('Run Application') {
-              steps {
-        withCredentials([string(credentialsId: 'mysql-root-password', variable: 'MYSQL_PASSWORD')]) {
-            sh '''
-                docker run -d \
-                --name employee-app \
-                --network ems-network \
-                -p 8082:8082 \
-                -e SPRING_DATASOURCE_URL="jdbc:mysql://mysqldb:3306/EMS?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true" \
-                -e SPRING_DATASOURCE_USERNAME="root" \
-                -e SPRING_DATASOURCE_PASSWORD="$MYSQL_PASSWORD" \
-                employee-management-backend:latest
-            '''
+            steps {
+                withCredentials([string(credentialsId: 'mysql-root-password', variable: 'MYSQL_PASSWORD')]) {
+                    sh '''
+                        docker run -d \
+                        --name employee-app \
+                        --network ems-network \
+                        -p 8082:8082 \
+                        -e SPRING_DATASOURCE_URL="jdbc:mysql://mysqldb:3306/EMS?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true" \
+                        -e SPRING_DATASOURCE_USERNAME="root" \
+                        -e SPRING_DATASOURCE_PASSWORD="$MYSQL_PASSWORD" \
+                        employee-management-backend:latest
+                    '''
+                }
             }
         }
 
@@ -56,10 +57,11 @@ pipeline {
             steps {
                 sh '''
                     for i in {1..12}; do
-                        if curl -fsS http://56.228.11.173/:8082/api/v1/employees; then
+                        if curl -fsS http://localhost:8082/api/v1/employees; then
                             echo "Application is running successfully!"
                             exit 0
                         fi
+
                         echo "Waiting for application..."
                         sleep 5
                     done
