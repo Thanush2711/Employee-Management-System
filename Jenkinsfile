@@ -53,7 +53,7 @@ pipeline {
             steps {
                 sh '''
                     for i in {1..12}; do
-                        if curl -fsS http://localhost:8082/api/v1/employees; then
+                        if curl -fsS http://56.228.11.173/:8082/api/v1/employees; then
                             echo "Application is running successfully!"
                             exit 0
                         fi
